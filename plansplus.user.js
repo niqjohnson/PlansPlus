@@ -177,10 +177,38 @@ function plansPlus () {
 		});
 	}
 	
-	// **********************
-	// Poll the API ---------
-	// **********************
+	// *********************************
+	// Refresh Autofinger List ---------
+	// *********************************
+	
+	// From http://stackoverflow.com/questions/1187518/javascript-array-difference
+	Array.prototype.diff = function(a) {
+		return this.filter(function(i) {return !(a.indexOf(i) > -1);});
+	};
 
+	function refreshAutofingerList (freshAutofingerList, autofingerLevel, unreadCount) {
+		$('#set_autoreadlev' + autofingerLevel).html('Level ' + autofingerLevel + ' <span class="unreadCount">(' + unreadCount + ')</span>');
+		if ($('#set_autoreadlev' + autofingerLevel).parent('.autoreadname').next('ul').length === 0) {
+			$('#set_autoreadlev' + autofingerLevel).parent('.autoreadname').after('<ul></ul>');
+		}
+		var $autofingerList = $('#set_autoreadlev' + autofingerLevel).parent('.autoreadname').next('ul');
+		var currentAutofingerList = [];
+		$autofingerList.find('li a').each(function () {
+			currentAutofingerList.push($(this).text());
+		});
+		var newAutofingers = freshAutofingerList.diff(currentAutofingerList);
+		if (newAutofingers.length > 0) {
+			for (var j=0; j<newAutofingers.length; j++) {
+				$autofingerList.prepend('<li class="autoreadentry"><a href="read.php?searchname=' + newAutofingers[j] + '">' + newAutofingers[j] + '</a></li>');
+			}
+			$autofingerList.children('li').removeClass('even odd first last');
+			$autofingerList.children('li:even').addClass('even');
+			$autofingerList.children('li:odd').addClass('odd');
+			$autofingerList.children('li:first').addClass('first');
+			$autofingerList.children('li:last').addClass('last');
+		}
+	}
+	
 	function poll() {
 	    $.ajax({ url: "/api/1/?task=autofingerlist", success: function(data) {
             var updated = 0;
@@ -194,13 +222,27 @@ function plansPlus () {
             if(updated > 0) {
                 // update the page title (to update the tab, indicating new plans were found)
                 if(document.title.match(/\(\d+\)/)){
-                	$(document).attr('title', document.title.replace(/\(\d+\)/, '(' + updated + ')'));
+					$(document).attr('title', document.title.replace(/\(\d+\)/, '(' + updated + ')'));
                 } else {
                     if(notificationSide == 'right') {
 						$(document).attr('title', document.title + ' (' + updated + ')');
                     } else {
-                        $(document).attr('title', '(' + updated + ') ' + document.title);
+						$(document).attr('title', '(' + updated + ') ' + document.title);
                     }
+                }
+                
+                // Add indicators to autoread levels
+                var level1Count = data.autofingerList[0].usernames.length;
+                var level2Count = data.autofingerList[1].usernames.length;
+                var level3Count = data.autofingerList[2].usernames.length;
+                if (level1Count > 0) {
+                	refreshAutofingerList (data.autofingerList[0].usernames, 1, level1Count);
+                }
+                if (level2Count > 0) {
+                	refreshAutofingerList (data.autofingerList[1].usernames, 2, level2Count);
+                }
+                if (level3Count > 0) {
+                	refreshAutofingerList (data.autofingerList[2].usernames, 3, level3Count);
                 }
             }
         }, dataType: "json", timeout: 10000});
