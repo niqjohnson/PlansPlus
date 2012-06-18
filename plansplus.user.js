@@ -3,11 +3,13 @@
 // 1.0.1 - Added a new keyboard shortcut: "m" goes to the plan at the top of the autoread list
 // 1.0.2 - Added keyboard shortcuts for numberpad keys as well as regular number keys
 // 1.0.3 - Added autofinger polling and notifications to tab title -- [nichols]
+// 1.1 - Added AJAX-updated autofinger list
 // Thanks to [youngian] and [nichols] for all their work on the original Newlove script!
 // ==UserScript==
 // @name           PlansPlus
 // @namespace      http://www.grinnellplans.com
-// @description    Enhancements to GrinnellPlans: Newlove, keybord navigation, new windows for external links
+// @description    Enhancements to GrinnellPlans: Newlove, keybord navigation, new windows for external links, and an updating autofinger list
+// @version			1.1
 // @include        http://grinnellplans.com/*
 // @include        http://www.grinnellplans.com/*
 // @match          http://grinnellplans.com/*
@@ -26,6 +28,16 @@ function plansPlus () {
 		notificationContainer.append(notificationText).prependTo('body').show().animate({top: '+=41'}, 1000).delay(10000).animate({top: '-=41'}, 1000, function () {notificationContainer.remove();});
 		$('#plansPlusNotificationClose').bind('click', function() {notificationContainer.clearQueue().animate({top: '-=41'}, 1000, function() {notificationContainer.remove()});});
 	}
+	
+	// **********************
+	// Get all preferences --
+	// **********************
+	
+	var linkTarget = window.localStorage.getItem('linkTarget');
+	var quickLoveUser = window.localStorage.getItem('plansPlusUser');
+	var notificationSide = window.localStorage.getItem("notification") || 'left';
+	var notificationLevel = window.localStorage.getItem("notificationLevel") || "3";
+	var currentPathname = window.location.pathname;
 	
 	// **********************
 	// Keyboard navigation --
@@ -78,7 +90,6 @@ function plansPlus () {
 	// External links -------
 	// **********************
 	
-	var linkTarget = window.localStorage.getItem('linkTarget');
 	if (linkTarget === null) {
 		window.localStorage.setItem('linkTarget', '_blank');
 		var linkTarget = window.localStorage.getItem('linkTarget');
@@ -89,9 +100,7 @@ function plansPlus () {
 	// Newlove ------------
 	// **********************
 	
-	var quickLoveUser = window.localStorage.getItem('plansPlusUser');
 	$('head').prepend('<style>.oldLove .result_sublist {display: none;} #plansPlusNotification {display: none; background: #F1EFC2; position: fixed; text-align: center; top: -41px; width: 100%; z-index: 1000; border-bottom: 1px solid #999; opacity: 0.9; line-height: 40px; height: 40px;} #plansPlusNotificationClose {color: #444444; font-family: Verdana, sans-serif; font-weight: bold; height: 40px; line-height: 40px; position: absolute; right: 5px; top: 0; cursor: pointer;} #plansPlusPreferences div {margin: 0 0 5px 0;}</style>');
-	var currentPathname = window.location.pathname;
 	if (currentPathname === '/search.php') {
 		var currentSearch = window.location.search;
 		var currentUserStartIndex = currentSearch.indexOf("mysearch=") + 9;
@@ -132,7 +141,7 @@ function plansPlus () {
 	// Preferences ----------
 	// **********************
 	
-	else if (currentPathname === '/customize.php') {
+	if (currentPathname === '/customize.php') {
 		var plansPlusPreferences = $('\
 			<div id="plansPlusPreferences">\
 				<h1 class="heading">PlansPlus Preferences</h1>\
@@ -150,6 +159,10 @@ function plansPlus () {
 		');
 		$('#preflist').after(plansPlusPreferences);
 		$('#plansPlusLinkTargetSelect option[value="' + linkTarget + '"]').attr('selected', 'selected');
+		if(notificationSide == 'right') {
+			$('#notificationRight').attr('checked', 'checked');
+		}
+		$('#notify' + notificationLevel).attr('checked', 'checked');
 		$('#plansPlusUpdateButton').bind('click', function(event) {
 			event.preventDefault();
 			window.localStorage.setItem('plansPlusUser', $('#plansPlusUserInput').val());
@@ -167,12 +180,7 @@ function plansPlus () {
 	// **********************
 	// Poll the API ---------
 	// **********************
-	var notificationSide = window.localStorage.getItem("notification") || 'left';
-	if(notificationSide == 'right') {
-	    $('#notificationRight').attr('checked', 'checked');
-	}
-	var notificationLevel = window.localStorage.getItem("notificationLevel") || "3";
-	$('#notify' + notificationLevel).attr('checked', 'checked');
+
 	function poll() {
 	    $.ajax({ url: "/api/1/?task=autofingerlist", success: function(data) {
             var updated = 0;
