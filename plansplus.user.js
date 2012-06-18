@@ -9,7 +9,7 @@
 // @name           PlansPlus
 // @namespace      http://www.grinnellplans.com
 // @description    Enhancements to GrinnellPlans: Newlove, keybord navigation, new windows for external links, and an updating autofinger list
-// @version			1.1
+// @version        1.1
 // @include        http://grinnellplans.com/*
 // @include        http://www.grinnellplans.com/*
 // @match          http://grinnellplans.com/*
@@ -194,12 +194,12 @@ function plansPlus () {
             if(updated > 0) {
                 // update the page title (to update the tab, indicating new plans were found)
                 if(document.title.match(/\(\d+\)/)){
-                    document.title.replace(/\(\d+\)/, '(' + updated + ')');
+                	$(document).attr('title', document.title.replace(/\(\d+\)/, '(' + updated + ')'));
                 } else {
                     if(notificationSide == 'right') {
-                        document.title += ' (' + updated + ')';
+						$(document).attr('title', document.title + ' (' + updated + ')');
                     } else {
-                        document.title = '(' + updated + ') ' + document.title;
+                        $(document).attr('title', '(' + updated + ') ' + document.title);
                     }
                 }
             }
