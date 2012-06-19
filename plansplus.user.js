@@ -36,6 +36,7 @@ function plansPlus () {
 	var linkTarget = window.localStorage.getItem('linkTarget');
 	var quickLoveUser = window.localStorage.getItem('plansPlusUser');
 	var notificationSide = window.localStorage.getItem("notification") || 'left';
+	var notificationLevel = window.localStorage.getItem("notificationLevel") || "3";
 	var currentPathname = window.location.pathname;
 	
 	// **********************
@@ -145,8 +146,12 @@ function plansPlus () {
 			<div id="plansPlusPreferences">\
 				<h1 class="heading">PlansPlus Preferences</h1>\
 				<form action="#"><p>PlansPlus is tracking newlove for <input id="plansPlusUserInput" type="text" value="' + quickLoveUser + '" /> and opening links in <select id="plansPlusLinkTargetSelect"><option value="_blank">a new tab or window</option><option value="_self">the same tab or window</option></select>. Don&rsquo;t like that? Change a preference and hit the update button, and viola! And remember, <strong>1, 2, 3</strong> = autoread level, <strong>n</strong> = next plan (the bottom one) in autoread, <strong>m</strong> = most recent plan (the top one) in autoread, <strong>q</strong> = quicklove.</p>\
-				<h3>Unread plan notifications:</h3>\
-				Show notifications on the: \
+				<h3>Unread plan counts in the tab title:</h3>\
+				<input id="notify3" type="radio" name="_notifylevel" value="3" checked="checked"/> Levels 1 + 2 + 3 \
+				<input id="notify2" type="radio" name="_notifylevel" value="2"/> Levels 1 + 2 only \
+				<input id="notify1" type="radio" name="_notifylevel" value="1"/> Level 1 only \
+				<input id="notify0" type="radio" name="_notifylevel" value="0"/> Turn off notifications \
+				<br/>Show notifications on the: \
 				<input id="notificationLeft" type="radio" name="_notification" value="left" checked="checked"/> left \
 				<input id="notificationRight" type="radio" name="_notification" value="right"/> right (relative to the page title)<br/>\
 				<input id="plansPlusUpdateButton" type="submit" value="Update PlansPlus Preferences" /></form>\
@@ -157,12 +162,14 @@ function plansPlus () {
 		if(notificationSide == 'right') {
 			$('#notificationRight').attr('checked', 'checked');
 		}
+		$('#notify' + notificationLevel).attr('checked', 'checked');
 		$('#plansPlusUpdateButton').bind('click', function(event) {
 			event.preventDefault();
 			window.localStorage.setItem('plansPlusUser', $('#plansPlusUserInput').val());
 			window.localStorage.setItem('linkTarget', $('#plansPlusLinkTargetSelect option:selected').val());
 			window.localStorage.setItem('inputFocused', 'false');
 			window.localStorage.setItem('notification', $('input[name="_notification"]:checked').val());
+			window.localStorage.setItem('notificationLevel', $('input[name="_notifylevel"]:checked').val());
 			if(quickLoveUser !== window.localStorage.getItem('plansPlusUser')) {
 				window.localStorage.setItem('prefsRecentlyChanged', 'user');
 			}
@@ -229,7 +236,9 @@ function plansPlus () {
 			var updated = 0;
 			if (data && data.autofingerList) {
 				for(var i=0; i<data.autofingerList.length; i++) {
-					updated += data.autofingerList[i].usernames.length;
+					if(data.autofingerList[i].level <= Number(notificationLevel)) {
+						updated += data.autofingerList[i].usernames.length;
+					}
 				}
 			}
 			if (updated > 0) {
@@ -237,15 +246,15 @@ function plansPlus () {
 				var level1Count = data.autofingerList[0].usernames.length;
 				var level2Count = data.autofingerList[1].usernames.length;
 				var level3Count = data.autofingerList[2].usernames.length;
-				if(document.title.match(/\(\d+\/\d+\/\d+\)/)){
-					$(document).attr('title', document.title.replace(/\(\d+\/\d+\/\d+\)/, '(' + level1Count + '/' + level2Count + '/' + level3Count + ')'));
+				if(document.title.match(/\(\d+\)/)){
+                	$(document).attr('title', document.title.replace(/\(\d+\)/, '(' + updated + ')'));
 				} else {
 					if(notificationSide == 'right') {
-						$(document).attr('title', document.title + ' (' + level1Count + '/' + level2Count + '/' + level3Count + ')');
+						$(document).attr('title', document.title + ' (' + updated + ')');
 					} else {
-						$(document).attr('title', '(' + level1Count + '/' + level2Count + '/' + level3Count + ') ' + document.title);
+						$(document).attr('title', '(' + updated + ') ' + document.title);
 					}
-				}
+                }
                 
 				// Add indicators to autoread levels and refresh with new links
 				if (level1Count > 0) {
@@ -260,8 +269,10 @@ function plansPlus () {
 			}
 		}, dataType: "json", timeout: 10000});
 	}
-	poll();
-	setInterval(poll, 30000);
+	if(Number(notificationLevel) > 0) {
+		poll();
+		setInterval(poll, 30000);
+	}
 }
 
 var plansPlusToInject = document.createElement("script");
