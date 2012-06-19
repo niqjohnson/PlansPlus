@@ -36,7 +36,6 @@ function plansPlus () {
 	var linkTarget = window.localStorage.getItem('linkTarget');
 	var quickLoveUser = window.localStorage.getItem('plansPlusUser');
 	var notificationSide = window.localStorage.getItem("notification") || 'left';
-	var notificationLevel = window.localStorage.getItem("notificationLevel") || "3";
 	var currentPathname = window.location.pathname;
 	
 	// **********************
@@ -147,11 +146,7 @@ function plansPlus () {
 				<h1 class="heading">PlansPlus Preferences</h1>\
 				<form action="#"><p>PlansPlus is tracking newlove for <input id="plansPlusUserInput" type="text" value="' + quickLoveUser + '" /> and opening links in <select id="plansPlusLinkTargetSelect"><option value="_blank">a new tab or window</option><option value="_self">the same tab or window</option></select>. Don&rsquo;t like that? Change a preference and hit the update button, and viola! And remember, <strong>1, 2, 3</strong> = autoread level, <strong>n</strong> = next plan (the bottom one) in autoread, <strong>m</strong> = most recent plan (the top one) in autoread, <strong>q</strong> = quicklove.</p>\
 				<h3>Unread plan notifications:</h3>\
-				<input id="notify3" type="radio" name="_notifylevel" value="3" checked="checked"/> All levels \
-				<input id="notify2" type="radio" name="_notifylevel" value="2"/> Levels 1 and 2 \
-				<input id="notify1" type="radio" name="_notifylevel" value="1"/> Level 1 \
-				<input id="notify0" type="radio" name="_notifylevel" value="0"/> Turn off notifications \
-				<br/>Show notifications on the: \
+				Show notifications on the: \
 				<input id="notificationLeft" type="radio" name="_notification" value="left" checked="checked"/> left \
 				<input id="notificationRight" type="radio" name="_notification" value="right"/> right (relative to the page title)<br/>\
 				<input id="plansPlusUpdateButton" type="submit" value="Update PlansPlus Preferences" /></form>\
@@ -162,14 +157,12 @@ function plansPlus () {
 		if(notificationSide == 'right') {
 			$('#notificationRight').attr('checked', 'checked');
 		}
-		$('#notify' + notificationLevel).attr('checked', 'checked');
 		$('#plansPlusUpdateButton').bind('click', function(event) {
 			event.preventDefault();
 			window.localStorage.setItem('plansPlusUser', $('#plansPlusUserInput').val());
 			window.localStorage.setItem('linkTarget', $('#plansPlusLinkTargetSelect option:selected').val());
 			window.localStorage.setItem('inputFocused', 'false');
 			window.localStorage.setItem('notification', $('input[name="_notification"]:checked').val());
-			window.localStorage.setItem('notificationLevel', $('input[name="_notifylevel"]:checked').val());
 			if(quickLoveUser !== window.localStorage.getItem('plansPlusUser')) {
 				window.localStorage.setItem('prefsRecentlyChanged', 'user');
 			}
@@ -187,28 +180,47 @@ function plansPlus () {
 	};
 
 	function refreshAutofingerList (freshAutofingerList, autofingerLevel, unreadCount) {
-		$('#set_autoreadlev' + autofingerLevel).html('Level ' + autofingerLevel + ' <span class="unreadCount">(' + unreadCount + ')</span>');
-		if ($('#set_autoreadlev' + autofingerLevel).parent('.autoreadname').next('ul').length === 0) {
-			$('#set_autoreadlev' + autofingerLevel).parent('.autoreadname').after('<ul></ul>');
-		}
-		var $autofingerList = $('#set_autoreadlev' + autofingerLevel).parent('.autoreadname').next('ul');
 		var currentAutofingerList = [];
-		$autofingerList.find('li a').each(function () {
-			currentAutofingerList.push($(this).text());
-		});
-		var newAutofingers = freshAutofingerList.diff(currentAutofingerList);
-		console.log(freshAutofingerList);
-		console.log(newAutofingers);
-		if (newAutofingers.length > 0) {
-			for (var j=0; j<newAutofingers.length; j++) {
-				$autofingerList.prepend('<li class="freshAutoreadentry autoreadentry" style="display: none;"><a href="read.php?searchname=' + newAutofingers[j] + '">' + newAutofingers[j] + '</a></li>');
+		// If the user is using the newer, table-less interface
+		if ($('#set_autoreadlev1').length === 1) {
+			$('#set_autoreadlev' + autofingerLevel).html('Level ' + autofingerLevel + ' <span class="unreadCount">(' + unreadCount + ')</span>');
+			if ($('#set_autoreadlev' + autofingerLevel).parent('.autoreadname').next('ul').length === 0) {
+				$('#set_autoreadlev' + autofingerLevel).parent('.autoreadname').after('<ul></ul>');
 			}
-			$autofingerList.children('li').removeClass('even odd first last');
-			$autofingerList.children('li:even').addClass('even');
-			$autofingerList.children('li:odd').addClass('odd');
-			$autofingerList.children('li:first').addClass('first');
-			$autofingerList.children('li:last').addClass('last');
-			$autofingerList.children('li.freshAutoreadentry').fadeIn();
+			var $autofingerList = $('#set_autoreadlev' + autofingerLevel).parent('.autoreadname').next('ul');
+			$autofingerList.find('li a').each(function () {
+				currentAutofingerList.push($(this).text());
+			});
+			var newAutofingers = freshAutofingerList.diff(currentAutofingerList);
+			if (newAutofingers.length > 0) {
+				for (var j=0; j<newAutofingers.length; j++) {
+					$autofingerList.prepend('<li class="freshAutoreadentry autoreadentry" style="display: none;"><a href="read.php?searchname=' + newAutofingers[j] + '">' + newAutofingers[j] + '</a></li>');
+				}
+				$autofingerList.children('li').removeClass('even odd first last');
+				$autofingerList.children('li:even').addClass('even');
+				$autofingerList.children('li:odd').addClass('odd');
+				$autofingerList.children('li:first').addClass('first');
+				$autofingerList.children('li:last').addClass('last');
+				$autofingerList.children('li.freshAutoreadentry').fadeIn();
+			}
+		}
+		
+		// Or if using the older, table interface
+		else {
+			$('p.imagelev3').css({'margin-left': 0, 'padding-right': 0});
+			$('td a[href="setpriv.php?myprivl=' + autofingerLevel + '"]').html('Level ' + autofingerLevel + ' <span class="unreadCount">(' + unreadCount + ')</span>');
+			var $currentAutoreadLevelRow = $('a[href*="mark_as_read"]').parent('td').parent('tr');
+			if ($currentAutoreadLevelRow.find('a.lev2').attr('href').replace('setpriv.php?myprivl=', '') == autofingerLevel) {
+				$('a.lev3').each(function () {
+					currentAutofingerList.push($(this).text().trim());
+				});
+				var newAutofingers = freshAutofingerList.diff(currentAutofingerList);
+				if (newAutofingers.length > 0) {
+					for (var j=0; j<newAutofingers.length; j++) {
+						$currentAutoreadLevelRow.after('<tr><td></td><td></td><td><p class="imagelev3" style="margin-left: 0px; padding-right: 0px;">&nbsp;</p></td><td><a class="lev3" href="read.php?searchname=' + newAutofingers[j] + '">' + newAutofingers[j] + '</a></td></tr>');
+					}
+				}
+			}
 		}
 	}
 	
@@ -217,9 +229,7 @@ function plansPlus () {
 			var updated = 0;
 			if (data && data.autofingerList) {
 				for(var i=0; i<data.autofingerList.length; i++) {
-					if(data.autofingerList[i].level <= Number(notificationLevel)) {
-						updated += data.autofingerList[i].usernames.length;
-					}
+					updated += data.autofingerList[i].usernames.length;
 				}
 			}
 			if (updated > 0) {
@@ -250,10 +260,8 @@ function plansPlus () {
 			}
 		}, dataType: "json", timeout: 10000});
 	}
-	if(Number(notificationLevel) > 0) {
-		poll();
-		setInterval(poll, 30000);
-	}
+	poll();
+	setInterval(poll, 30000);
 }
 
 var plansPlusToInject = document.createElement("script");
