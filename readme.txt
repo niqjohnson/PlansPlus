@@ -1,0 +1,2 @@
+# PlansPlus
+PlansPlus is an extension that enhances Grinnell Plans. It adds support for newlove, keyboard navigation, link targets and a refreshing autoread list to Firefox (using Greasemonkey), Chrome and Safari.
