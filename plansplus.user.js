@@ -231,6 +231,16 @@ function plansPlus () {
 		}
 	}
 	
+	var totalTime = 0;
+	var interval;
+	var intervalRules = [
+		[(10 * 60 * 1000), (2 * 60 * 60 * 1000)], // every 10 minutes starting at 2 hours
+		[(5 * 60 * 1000), (60 * 60 * 1000)],      // every 5 minutes starting at 1 hour
+		[(2 * 60 * 1000), (5 * 60 * 1000)],       // every 2 minutes starting at 5 minutes
+		[(30 * 1000), 0]                          // every 30 seconds starting at 0 minutes
+	];
+	var checkInterval = intervalRules[intervalRules.length-1][0];
+	
 	function poll() {
 		$.ajax({ url: "/api/1/?task=autofingerlist", success: function(data) {
 			var updated = 0;
@@ -268,10 +278,24 @@ function plansPlus () {
 				}
 			}
 		}, dataType: "json", timeout: 10000});
+		for(var x=0; x<intervalRules.length; x++) {
+			var ruleInterval = intervalRules[x][0];
+			var ruleTime = intervalRules[x][1];
+			if(checkInterval < ruleInterval && totalTime >= ruleTime) {
+				checkInterval = ruleInterval;
+				clearInterval(interval);
+				interval = setInterval(poll, checkInterval);
+				break;
+			} else if(totalTime >= ruleTime) {
+				// interval is already high enough. no need to check the smaller timeouts.
+				break;
+				}
+		}
+		totalTime += checkInterval;
 	}
 	if(Number(notificationLevel) > 0) {
 		poll();
-		setInterval(poll, 30000);
+		interval = setInterval(poll, 30000);
 	}
 }
 
