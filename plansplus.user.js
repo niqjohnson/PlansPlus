@@ -121,6 +121,7 @@ function plansPlus () {
 			if (oldLove === null) {
 				var oldLove = {};
 			}
+			var newLoveCount = 0;
 			$('#search_results>li').each(function () {
 				var lover = $(this).find('a.planlove').text();
 				var loving = $(this).find('ul.result_sublist').text();
@@ -130,9 +131,17 @@ function plansPlus () {
 				}
 				else {
 					$(this).addClass('newLove');
+					newLoveCount++;
 				}
 				currentLove[lover] = loving;
 			});
+			if(newLoveCount > 0) {
+			    if(newLoveCount == 1) {
+			        showNotification('<strong>' + newLoveCount + ' new person has planloved you!</strong>');
+			    } else {
+			        showNotification('<strong>' + newLoveCount + ' new people have planloved you!</strong>');
+			    }
+			}
 			window.localStorage.setItem('oldLove', JSON.stringify(currentLove));
 		}
 	}
