@@ -4,12 +4,13 @@
 // 1.0.2 - Added keyboard shortcuts for numberpad keys as well as regular number keys
 // 1.0.3 - Added autofinger polling and notifications to tab title -- [nichols]
 // 1.1 - Added AJAX-updated autofinger list
+// 1.1.1 - Stop newlove if user is not logged in
 // Thanks to [youngian] and [nichols] for all their work on the original Newlove script!
 // ==UserScript==
 // @name           PlansPlus
 // @namespace      http://www.grinnellplans.com
 // @description    Enhancements to GrinnellPlans: Newlove, keybord navigation, new windows for external links, and an updating autofinger list
-// @version        1.1
+// @version        1.1.1
 // @include        http://grinnellplans.com/*
 // @include        http://www.grinnellplans.com/*
 // @match          http://grinnellplans.com/*
@@ -101,7 +102,7 @@ function plansPlus () {
 	// **********************
 	
 	$('head').prepend('<style>.oldLove .result_sublist {display: none;} #plansPlusNotification {display: none; background: #F1EFC2; position: fixed; text-align: center; top: -41px; width: 100%; z-index: 1000; border-bottom: 1px solid #999; opacity: 0.9; line-height: 40px; height: 40px;} #plansPlusNotificationClose {color: #444444; font-family: Verdana, sans-serif; font-weight: bold; height: 40px; line-height: 40px; position: absolute; right: 5px; top: 0; cursor: pointer;} #plansPlusPreferences div {margin: 0 0 5px 0;}</style>');
-	if (currentPathname === '/search.php') {
+	if (currentPathname === '/search.php' && $('a[href="edit.php"]').length > 0) {
 		var currentSearch = window.location.search;
 		var currentUserStartIndex = currentSearch.indexOf("mysearch=") + 9;
 		var currentUserEndIndex = currentSearch.indexOf("&", currentUserStartIndex);
