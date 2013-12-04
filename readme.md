@@ -3,7 +3,7 @@ PlansPlus enhances [Grinnell Plans](http://grinnellplans.com/). It adds support 
 
 ## Installing
 Installing PlansPlus varies a little depending on your browser:
-* Safari users: just grab the [PlansPlus Safari extension](http://hippityhey.com/plans/PlansPlus.safariextz).
+* Safari users: just grab the [PlansPlus Safari extension](https://github.com/niqjohnson/PlansPlus/raw/master/PlansPlus.safariextz).
 * Firefox users: install the [Greasemonkey extension](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/), then grab the [PlansPlus userscript](https://github.com/niqjohnson/PlansPlus/raw/master/plansplus.user.js)
 * Chrome users: save the [PlansPlus userscript](https://github.com/niqjohnson/PlansPlus/raw/master/plansplus.user.js) to your computer (right click that link > "Save Link As..."), open Chrome's extension manager (Window > Extensions) and drag the file you saved in there.
 
