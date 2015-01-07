@@ -15,6 +15,10 @@
 // @include        http://www.grinnellplans.com/*
 // @match          http://grinnellplans.com/*
 // @match          http://www.grinnellplans.com/*
+// @include        https://grinnellplans.com/*
+// @include        https://www.grinnellplans.com/*
+// @match          https://grinnellplans.com/*
+// @match          https://www.grinnellplans.com/*
 // ==/UserScript==
 
 function plansPlus () {
@@ -251,8 +255,10 @@ function plansPlus () {
 	];
 	var checkInterval = intervalRules[intervalRules.length-1][0];
 	
+	var url = document.location.host + '/api/1/?task=autofingerlist';
+	
 	function poll() {
-		$.ajax({ url: "/api/1/?task=autofingerlist", success: function(data) {
+		$.ajax({ url: url, success: function(data) {
 			var updated = 0;
 			if (data && data.autofingerList) {
 				for(var i=0; i<data.autofingerList.length; i++) {
