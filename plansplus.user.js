@@ -255,7 +255,7 @@ function plansPlus () {
 	];
 	var checkInterval = intervalRules[intervalRules.length-1][0];
 	
-	var url = document.location.host + '/api/1/?task=autofingerlist';
+	var url = '//' + document.location.host + '/api/1/?task=autofingerlist';
 	
 	function poll() {
 		$.ajax({ url: url, success: function(data) {
