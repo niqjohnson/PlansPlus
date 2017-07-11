@@ -50,7 +50,7 @@ function plansPlus () {
 	
 	window.localStorage.setItem('inputFocused', 'false');
 	
-	$('textarea, input:text').live('focus', function() {
+	$('textarea, input:text, input:password').live('focus', function() {
 		window.localStorage.setItem('inputFocused', 'true');
 	}).blur(function() {
 		window.localStorage.setItem('inputFocused', 'false');
