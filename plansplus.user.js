@@ -5,12 +5,13 @@
 // 1.0.3 - Added autofinger polling and notifications to tab title -- [nichols]
 // 1.1 - Added AJAX-updated autofinger list
 // 1.1.1 - Stop newlove if user is not logged in
+// 1.1.2 - Stop keyboard shortcuts when focused on a password field
 // Thanks to [youngian] and [nichols] for all their work on the original Newlove script!
 // ==UserScript==
 // @name           PlansPlus
 // @namespace      http://www.grinnellplans.com
 // @description    Enhancements to GrinnellPlans: Newlove, keybord navigation, new windows for external links, and an updating autofinger list
-// @version        1.1.1
+// @version        1.1.2
 // @include        http://grinnellplans.com/*
 // @include        http://www.grinnellplans.com/*
 // @match          http://grinnellplans.com/*
@@ -26,36 +27,36 @@ function plansPlus () {
 	// **********************
 	// Reusable functions ---
 	// **********************
-	
+
 	function showNotification (notificationText) {
 		$('#plansPlusNotification').clearQueue().remove();
 		var notificationContainer = $('<div id="plansPlusNotification"><div id="plansPlusNotificationClose">X</div></div>');
 		notificationContainer.append(notificationText).prependTo('body').show().animate({top: '+=41'}, 1000).delay(10000).animate({top: '-=41'}, 1000, function () {notificationContainer.remove();});
 		$('#plansPlusNotificationClose').bind('click', function() {notificationContainer.clearQueue().animate({top: '-=41'}, 1000, function() {notificationContainer.remove()});});
 	}
-	
+
 	// **********************
 	// Get all preferences --
 	// **********************
-	
+
 	var linkTarget = window.localStorage.getItem('linkTarget');
 	var quickLoveUser = window.localStorage.getItem('plansPlusUser');
 	var notificationSide = window.localStorage.getItem("notification") || 'left';
 	var notificationLevel = window.localStorage.getItem("notificationLevel") || "3";
 	var currentPathname = window.location.pathname;
-	
+
 	// **********************
 	// Keyboard navigation --
 	// **********************
-	
+
 	window.localStorage.setItem('inputFocused', 'false');
-	
+
 	$('textarea, input:text, input:password').live('focus', function() {
 		window.localStorage.setItem('inputFocused', 'true');
 	}).blur(function() {
 		window.localStorage.setItem('inputFocused', 'false');
 	});
-	
+
 	$(document.documentElement).keyup(function (event) {
 		var inputFocused = window.localStorage.getItem('inputFocused');
 		if (inputFocused == 'false' && $('input[value="Guest"]').length !== 1) {
@@ -90,21 +91,21 @@ function plansPlus () {
 			}
 		}
 	});
-	
+
 	// **********************
 	// External links -------
 	// **********************
-	
+
 	if (linkTarget === null) {
 		window.localStorage.setItem('linkTarget', '_blank');
 		var linkTarget = window.localStorage.getItem('linkTarget');
 	}
 	$('a[href ^= "http"]').attr('target', linkTarget);
-	
+
 	// **********************
 	// Newlove ------------
 	// **********************
-	
+
 	$('head').prepend('<style>.oldLove .result_sublist {display: none;} #plansPlusNotification {display: none; background: #F1EFC2; position: fixed; text-align: center; top: -41px; width: 100%; z-index: 1000; border-bottom: 1px solid #999; opacity: 0.9; line-height: 40px; height: 40px;} #plansPlusNotificationClose {color: #444444; font-family: Verdana, sans-serif; font-weight: bold; height: 40px; line-height: 40px; position: absolute; right: 5px; top: 0; cursor: pointer;} #plansPlusPreferences div {margin: 0 0 5px 0;}</style>');
 	if (currentPathname === '/search.php' && $('a[href="edit.php"]').length > 0) {
 		var currentSearch = window.location.search;
@@ -150,11 +151,11 @@ function plansPlus () {
 			window.localStorage.setItem('oldLove', JSON.stringify(currentLove));
 		}
 	}
-	
+
 	// **********************
 	// Preferences ----------
 	// **********************
-	
+
 	if (currentPathname === '/customize.php') {
 		var plansPlusPreferences = $('\
 			<div id="plansPlusPreferences">\
@@ -190,11 +191,11 @@ function plansPlus () {
 			showNotification('<strong>PlansPlus preferences have been updated.</strong>');
 		});
 	}
-	
+
 	// *********************************
 	// Refresh Autofinger List ---------
 	// *********************************
-	
+
 	// From http://stackoverflow.com/questions/1187518/javascript-array-difference
 	Array.prototype.diff = function(a) {
 		return this.filter(function(i) {return !(a.indexOf(i) > -1);});
@@ -225,7 +226,7 @@ function plansPlus () {
 				$autofingerList.children('li.freshAutoreadentry').fadeIn();
 			}
 		}
-		
+
 		// Or if using the older, table interface
 		else {
 			$('p.imagelev3').css({'margin-left': 0, 'padding-right': 0});
@@ -244,7 +245,7 @@ function plansPlus () {
 			}
 		}
 	}
-	
+
 	var totalTime = 0;
 	var interval;
 	var intervalRules = [
@@ -254,9 +255,9 @@ function plansPlus () {
 		[(30 * 1000), 0]                          // every 30 seconds starting at 0 minutes
 	];
 	var checkInterval = intervalRules[intervalRules.length-1][0];
-	
+
 	var url = '//' + document.location.host + '/api/1/?task=autofingerlist';
-	
+
 	function poll() {
 		$.ajax({ url: url, success: function(data) {
 			var updated = 0;
@@ -281,7 +282,7 @@ function plansPlus () {
 						$(document).attr('title', '(' + updated + ') ' + document.title);
 					}
                 }
-                
+
 				// Add indicators to autoread levels and refresh with new links
 				if (level1Count > 0) {
 					refreshAutofingerList (data.autofingerList[0].usernames, 1, level1Count);
