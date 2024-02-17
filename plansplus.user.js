@@ -6,6 +6,7 @@
 // 1.1 - Added AJAX-updated autofinger list
 // 1.1.1 - Stop newlove if user is not logged in
 // 1.1.2 - Stop keyboard shortcuts when focused on a password field
+// 2.0.0 - Update to Manifest v3, add timestamps to planlove
 // Thanks to [youngian] and [nichols] for all their work on the original Newlove script!
 // ==UserScript==
 // @name           PlansPlus
